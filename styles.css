@@ -168,10 +168,18 @@ html[data-theme="dark"] {
 .bascule-tajwid[aria-pressed="true"] .pastilles i.tj-p { background: var(--tj-p); }
 .bascule-tajwid[aria-pressed="true"] .pastilles i.tj-a { background: var(--tj-a); }
 .legende-tajwid { margin-top: 8px; font-size: 13px; }
-.legende-tajwid summary { cursor: pointer; color: var(--encre-2); font-weight: 600; list-style: none; }
+.legende-tajwid summary {
+  cursor: pointer; list-style: none; display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  min-height: 40px; padding: 0 12px; border-radius: var(--rayon-petit); background: var(--surface-2);
+  color: var(--encre-2); font-weight: 600; -webkit-user-select: none; user-select: none;
+}
 .legende-tajwid summary::-webkit-details-marker { display: none; }
-.legende-tajwid summary::after { content: " +"; }
-.legende-tajwid[open] summary::after { content: " –"; }
+.legende-tajwid summary::after {
+  content: ""; width: 8px; height: 8px; flex: none; margin-top: -4px;
+  border: solid currentColor; border-width: 0 2px 2px 0; transform: rotate(45deg); transition: transform .2s ease;
+}
+.legende-tajwid[open] summary::after { transform: rotate(-135deg); margin-top: 4px; }
+.legende-tajwid ul { padding: 4px 2px 0; }
 .legende-tajwid ul { list-style: none; margin: 10px 0 0; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 6px 12px; }
 .legende-tajwid li { display: flex; align-items: center; gap: 7px; color: var(--encre-2); line-height: 1.3; }
 .legende-tajwid li i { flex: none; width: 10px; height: 10px; border-radius: 50%; background: currentColor; }

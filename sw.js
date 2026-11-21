@@ -1,5 +1,5 @@
 // Hifz — service worker : l'appli s'ouvre même hors connexion.
-var VERSION = 'hifz-v2';
+var VERSION = 'hifz-v3';
 var COQUILLE = ['./', 'index.html', 'styles.css', 'app.js', 'data.js', 'manifest.webmanifest', 'icons/icon-192.png', 'icons/apple-touch-icon.png', 'widget/hifz-widget.js'];
 
 self.addEventListener('install', function (e) {

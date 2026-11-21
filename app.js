@@ -893,6 +893,14 @@
     toast(S.tajwid ? 'Couleurs du tajwid activées.' : 'Couleurs du tajwid désactivées.');
   }
   $('#btn-tajwid').addEventListener('click', basculerTajwid);
+  // La légende reste pliée ou dépliée comme tu l'as laissée.
+  var legende = $('#legende-tajwid');
+  legende.open = S.legendeOuverte === true;
+  legende.addEventListener('toggle', function () {
+    if (S.legendeOuverte === legende.open) return;
+    S.legendeOuverte = legende.open;
+    sauver();
+  });
   $('#reglage-tajwid').addEventListener('click', basculerTajwid);
   $('#btn-trad').addEventListener('click', function () {
     S.traduction = !S.traduction;
