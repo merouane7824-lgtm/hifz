@@ -2,6 +2,7 @@
 // 1. Dans Scriptable, crée un script nommé exactement « Hifz » et colle ce code.
 // 2. Dans l'appli Hifz (Réglages), touche « Envoyer au widget » : Scriptable s'ouvre et enregistre tes versets.
 // 3. Ajoute un widget Scriptable (taille moyenne ou grande) et choisis le script Hifz.
+//    Fonctionne aussi sur l'écran verrouillé (widget rectangulaire, rond ou en ligne).
 
 const fm = FileManager.local();
 const DOSSIER = fm.documentsDirectory();
@@ -97,7 +98,55 @@ async function texteArabe(s, du, au) {
   }
 }
 
+// Écran verrouillé : widgets monochromes, très petits (rectangulaire, en ligne, rond).
+function construireVerrouille(famille) {
+  const w = new ListWidget();
+  const faitAujourdhui = etat && etat.fait && etat.date === aujourdhui();
+  const plageCourte = etat && etat.s ? (etat.du === etat.au ? String(etat.du) : etat.du + "–" + etat.au) : "";
+  if (famille === "accessoryInline") {
+    const t = w.addText(etat && etat.s ? (faitAujourdhui ? "✓ Hifz · demain " : "Hifz · ") + etat.nom + " " + plageCourte : "Hifz · ouvre l’appli");
+    t.font = Font.systemFont(12);
+    return w;
+  }
+  if (famille === "accessoryCircular") {
+    w.addAccessoryWidgetBackground = true;
+    w.addSpacer();
+    const haut = w.addText(etat && etat.s ? (faitAujourdhui ? "✓" : String(etat.s)) : "Hifz");
+    haut.font = Font.boldSystemFont(faitAujourdhui ? 18 : 14);
+    haut.centerAlignText();
+    const bas = w.addText(plageCourte || "—");
+    bas.font = Font.mediumSystemFont(11);
+    bas.centerAlignText();
+    bas.minimumScaleFactor = 0.6;
+    w.addSpacer();
+    return w;
+  }
+  // accessoryRectangular
+  if (!etat || !etat.s) {
+    const t = w.addText("Hifz");
+    t.font = Font.boldSystemFont(14);
+    const m = w.addText("Envoie tes versets depuis l’appli");
+    m.font = Font.systemFont(12);
+    return w;
+  }
+  const l1 = w.addText(faitAujourdhui ? "✓ Objectif atteint" : "À apprendre aujourd’hui");
+  l1.font = Font.semiboldSystemFont(11);
+  l1.textOpacity = 0.75;
+  const l2 = w.addText(etat.nom + "  " + etat.ar);
+  l2.font = Font.boldSystemFont(14);
+  l2.lineLimit = 1;
+  l2.minimumScaleFactor = 0.7;
+  const l3 = w.addText((faitAujourdhui ? "Ensuite : " : "") + libVersets(etat.du, etat.au).toLowerCase());
+  l3.font = Font.systemFont(12);
+  l3.lineLimit = 1;
+  const minuit = new Date();
+  minuit.setHours(24, 0, 30, 0);
+  w.refreshAfterDate = minuit;
+  return w;
+}
+
 async function construire(famille) {
+  if (String(famille).indexOf("accessory") === 0) return construireVerrouille(famille);
   const w = new ListWidget();
   w.backgroundColor = C.fond;
   w.setPadding(14, 16, 14, 16);
