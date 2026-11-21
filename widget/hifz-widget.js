@@ -38,8 +38,16 @@ function libVersets(du, au) {
 }
 
 // Données envoyées par l'appli (scriptable:///run/Hifz?...)
+const CLE_TROUSSEAU = "hifz-widget";
+function lireEtat() {
+  // Le trousseau est partagé entre l'app Scriptable et ses widgets ; le fichier sert de secours.
+  try {
+    if (Keychain.contains(CLE_TROUSSEAU)) return JSON.parse(Keychain.get(CLE_TROUSSEAU));
+  } catch (e) {}
+  return lireJSON(FICHIER, null);
+}
 const q = args.queryParameters || {};
-let etat = lireJSON(FICHIER, null);
+let etat = lireEtat();
 const recu = q.v !== undefined;
 if (recu) {
   etat = {
@@ -55,6 +63,7 @@ if (recu) {
     r: q.r || "",
     o: q.o ? String(q.o).split("|").filter(Boolean) : [],
   };
+  try { Keychain.set(CLE_TROUSSEAU, JSON.stringify(etat)); } catch (e) {}
   fm.writeString(FICHIER, JSON.stringify(etat));
 }
 
