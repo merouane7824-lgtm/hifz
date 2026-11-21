@@ -54,8 +54,28 @@
         <svg class="coin coin-hd" viewBox="0 0 24 24" aria-hidden="true"><use href="#etoile"/></svg>
         <svg class="coin coin-bg" viewBox="0 0 24 24" aria-hidden="true"><use href="#etoile"/></svg>
         <svg class="coin coin-bd" viewBox="0 0 24 24" aria-hidden="true"><use href="#etoile"/></svg>
-        <p class="verset-statut" id="verset-statut"></p>
+        <div class="verset-haut">
+          <p class="verset-statut" id="verset-statut"></p>
+          <button class="bascule-tajwid" type="button" id="btn-tajwid" aria-pressed="true" aria-label="Couleurs du tajwid">
+            <span class="pastilles" aria-hidden="true"><i class="tj-q"></i><i class="tj-p"></i><i class="tj-a"></i></span>Tajwid
+          </button>
+        </div>
         <div id="nouveaux"></div>
+        <details class="legende-tajwid" id="legende-tajwid">
+          <summary>Que signifient les couleurs ?</summary>
+          <ul>
+            <li><i class="tj-n"></i>Madd naturel, 2 temps</li>
+            <li><i class="tj-p"></i>Madd permis, 2, 4 ou 6 temps</li>
+            <li><i class="tj-o"></i>Madd obligatoire, 4 ou 5 temps</li>
+            <li><i class="tj-m"></i>Madd nécessaire, 6 temps</li>
+            <li><i class="tj-g"></i>Ghunna (nasalisation)</li>
+            <li><i class="tj-q"></i>Qalqala (rebond)</li>
+            <li><i class="tj-f"></i>Ikhfa (dissimulation)</li>
+            <li><i class="tj-a"></i>Idgham (assimilation)</li>
+            <li><i class="tj-i"></i>Iqlab (nūn devient mīm)</li>
+            <li><i class="tj-h"></i>Lettre non prononcée</li>
+          </ul>
+        </details>
         <div class="verset-outils">
           <button class="pilule" type="button" id="btn-ecouter" aria-pressed="false">
             <svg class="ico-play" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l10-6.5z"/></svg>
@@ -162,6 +182,10 @@
           <button type="button" role="radio" data-theme-choix="auto">Automatique</button>
           <button type="button" role="radio" data-theme-choix="light">Clair</button>
           <button type="button" role="radio" data-theme-choix="dark">Sombre</button>
+        </div>
+        <div class="ligne-reglage">
+          <div><p class="reglage-nom">Couleurs du tajwid</p><p class="bloc-aide">Colore le texte arabe selon les règles de récitation.</p></div>
+          <button class="coche" type="button" id="reglage-tajwid" aria-pressed="true"><span class="coche-case" aria-hidden="true"></span><span id="reglage-tajwid-txt">Activées</span></button>
         </div>
       </article>
 

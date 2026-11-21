@@ -138,6 +138,48 @@ html[data-theme="light"] .ico-soleil, html[data-theme="dark"] .ico-lune { displa
 #btn-trad[aria-pressed="true"] { color: var(--encre); border-color: var(--encre-2); }
 .lien-quran { margin-left: auto; align-self: center; font-size: 13px; color: var(--encre-2); }
 
+/* Tajwid : couleurs de référence des mushafs tajwid, éclaircies en thème sombre */
+:root {
+  --tj-gris: #A3A9B3; --tj-n: #537FFF; --tj-p: #4050FF; --tj-o: #2144C1; --tj-m: #000EBC;
+  --tj-q: #DD0008; --tj-g: #F07A12; --tj-f: #9400A8; --tj-c: #D500B7; --tj-i: #1BA9E6;
+  --tj-a: #169777; --tj-u: #169200; --tj-w: #58B800; --tj-d: #8E959F;
+}
+html[data-theme="dark"] {
+  --tj-gris: #6E7A8E; --tj-n: #86A6FF; --tj-p: #8C95FF; --tj-o: #6F92F2; --tj-m: #A1A8FF;
+  --tj-q: #FF6B6F; --tj-g: #FFA154; --tj-f: #D488F0; --tj-c: #F27FE0; --tj-i: #5AD2FF;
+  --tj-a: #3FD1A3; --tj-u: #6BD65A; --tj-w: #9BE06A; --tj-d: #A3ABB6;
+}
+.tj-h, .tj-s, .tj-l { color: var(--tj-gris); }
+.tj-n { color: var(--tj-n); } .tj-p { color: var(--tj-p); } .tj-o { color: var(--tj-o); } .tj-m { color: var(--tj-m); }
+.tj-q { color: var(--tj-q); } .tj-g { color: var(--tj-g); } .tj-f { color: var(--tj-f); } .tj-c { color: var(--tj-c); }
+.tj-i { color: var(--tj-i); } .tj-a { color: var(--tj-a); } .tj-u { color: var(--tj-u); } .tj-w { color: var(--tj-w); }
+.tj-d, .tj-b { color: var(--tj-d); }
+.verset-haut { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
+.verset-haut .verset-statut { margin: 0; }
+.bascule-tajwid {
+  flex: none; display: inline-flex; align-items: center; gap: 7px; min-height: 34px; padding: 0 12px 0 10px;
+  border-radius: 999px; border: 1px solid var(--trait); background: var(--surface); color: var(--encre-2); font-weight: 700; font-size: 13px;
+}
+.bascule-tajwid[aria-pressed="true"] { border-color: var(--encre-2); color: var(--encre); background: var(--surface-2); }
+.pastilles { display: inline-flex; }
+.pastilles i { width: 9px; height: 9px; border-radius: 50%; background: var(--trait); margin-left: -2px; box-shadow: 0 0 0 1.5px var(--surface); }
+.pastilles i:first-child { margin-left: 0; }
+.bascule-tajwid[aria-pressed="true"] .pastilles i.tj-q { background: var(--tj-q); }
+.bascule-tajwid[aria-pressed="true"] .pastilles i.tj-p { background: var(--tj-p); }
+.bascule-tajwid[aria-pressed="true"] .pastilles i.tj-a { background: var(--tj-a); }
+.legende-tajwid { margin-top: 8px; font-size: 13px; }
+.legende-tajwid summary { cursor: pointer; color: var(--encre-2); font-weight: 600; list-style: none; }
+.legende-tajwid summary::-webkit-details-marker { display: none; }
+.legende-tajwid summary::after { content: " +"; }
+.legende-tajwid[open] summary::after { content: " –"; }
+.legende-tajwid ul { list-style: none; margin: 10px 0 0; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 6px 12px; }
+.legende-tajwid li { display: flex; align-items: center; gap: 7px; color: var(--encre-2); line-height: 1.3; }
+.legende-tajwid li i { flex: none; width: 10px; height: 10px; border-radius: 50%; background: currentColor; }
+.legende-tajwid li i.tj-n { color: var(--tj-n); } .legende-tajwid li i.tj-p { color: var(--tj-p); } .legende-tajwid li i.tj-o { color: var(--tj-o); }
+.legende-tajwid li i.tj-m { color: var(--tj-m); } .legende-tajwid li i.tj-g { color: var(--tj-g); } .legende-tajwid li i.tj-q { color: var(--tj-q); }
+.legende-tajwid li i.tj-f { color: var(--tj-f); } .legende-tajwid li i.tj-a { color: var(--tj-a); } .legende-tajwid li i.tj-i { color: var(--tj-i); }
+.legende-tajwid li i.tj-h { color: var(--tj-gris); }
+
 /* Barre d'action */
 .barre-action { display: flex; gap: 10px; margin-top: 16px; }
 .pas { display: flex; align-items: center; background: var(--surface); border: 1px solid var(--trait); border-radius: 999px; padding: 4px; }

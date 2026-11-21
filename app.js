@@ -90,7 +90,7 @@
     SOURATES.forEach(function (s) { if (s.n >= 84) sourates[s.n] = { appris: s.versets }; });
     sourates[83] = { appris: 17 };
     return {
-      v: 1, objectif: 2, cycle: 7, theme: 'auto', recitateur: 'ar.husary', traduction: true,
+      v: 1, objectif: 2, cycle: 7, theme: 'auto', recitateur: 'ar.husary', traduction: true, tajwid: true,
       repetitions: 3, widget: false, debut: aujourdhui(), sourates: sourates, jours: {}
     };
   }
@@ -106,6 +106,7 @@
     if (!RECITATEURS.some(function (x) { return x[0] === r.recitateur; })) r.recitateur = 'ar.husary';
     if (REPETITIONS.indexOf(r.repetitions) < 0) r.repetitions = 3;
     r.traduction = r.traduction !== false;
+    r.tajwid = r.tajwid !== false;
     r.widget = r.widget === true;
     return r;
   }
@@ -269,27 +270,27 @@
     return texte;
   }
   function versetsEnCache(n, du, au) {
-    var cle = n + ':' + du + '-' + au + ':' + S.recitateur;
+    var cle = 'v2:' + n + ':' + du + '-' + au + ':' + S.recitateur;
     if (cacheMem.has(cle)) return cacheMem.get(cle);
     var c = lireCache()[cle];
     if (c) { cacheMem.set(cle, c.v); return c.v; }
     return null;
   }
   function chargerVersets(n, du, au) {
-    var cle = n + ':' + du + '-' + au + ':' + S.recitateur;
+    var cle = 'v2:' + n + ':' + du + '-' + au + ':' + S.recitateur;
     var deja = versetsEnCache(n, du, au);
     if (deja) return Promise.resolve(deja);
     var rec = S.recitateur;
-    var url = 'https://api.alquran.cloud/v1/surah/' + n + '/editions/quran-uthmani,fr.hamidullah,' + rec + '?offset=' + (du - 1) + '&limit=' + (au - du + 1);
+    var url = 'https://api.alquran.cloud/v1/surah/' + n + '/editions/quran-uthmani,quran-tajweed,fr.hamidullah,' + rec + '?offset=' + (du - 1) + '&limit=' + (au - du + 1);
     return fetch(url).then(function (r) {
       if (!r.ok) throw new Error('HTTP ' + r.status);
       return r.json();
     }).then(function (j) {
       if (j.code !== 200 || !Array.isArray(j.data)) throw new Error('Réponse inattendue');
       var ed = function (id) { var x = j.data.find(function (d) { return d.edition && d.edition.identifier === id; }); return x ? x.ayahs : []; };
-      var ar = ed('quran-uthmani'), fr = ed('fr.hamidullah'), son = ed(rec);
+      var ar = ed('quran-uthmani'), tj = ed('quran-tajweed'), fr = ed('fr.hamidullah'), son = ed(rec);
       var v = ar.map(function (a, i) {
-        return { num: a.numberInSurah, ar: nettoyer(a.text, n, a.numberInSurah), fr: fr[i] ? fr[i].text : '', audio: son[i] && son[i].audio ? son[i].audio : '' };
+        return { num: a.numberInSurah, ar: nettoyer(a.text, n, a.numberInSurah), tj: tj[i] ? nettoyer(tj[i].text, n, a.numberInSurah) : '', fr: fr[i] ? fr[i].text : '', audio: son[i] && son[i].audio ? son[i].audio : '' };
       });
       cacheMem.set(cle, v);
       ecrireCache(cle, v);
@@ -500,9 +501,19 @@
 
   // ---------- Affichage : Aujourd'hui ----------
   var jetonNouveaux = 0;
+  // Balises tajwid de l'API : [règle[texte] ou [règle:id[texte] → span coloré.
+  function htmlTajwid(texte) {
+    var re = /\[([a-z])(?::\d+)?\[([^\]]*)\]/g;
+    var sortie = '', dernier = 0, m;
+    while ((m = re.exec(texte))) {
+      sortie += esc(texte.slice(dernier, m.index)) + '<span class="tj tj-' + m[1] + '">' + esc(m[2]) + '</span>';
+      dernier = re.lastIndex;
+    }
+    return sortie + esc(texte.slice(dernier));
+  }
   function htmlTexte(versets) {
     var ar = versets.map(function (v) {
-      return esc(v.ar) + ' <span class="fin-ayah">﴿' + chiffresArabes(v.num) + '﴾</span>';
+      return (S.tajwid && v.tj ? htmlTajwid(v.tj) : esc(v.ar)) + ' <span class="fin-ayah">﴿' + chiffresArabes(v.num) + '﴾</span>';
     }).join(' ');
     var fr = versets.map(function (v) { return '<span>' + v.num + '</span>' + esc(v.fr); }).join(' ');
     return '<p class="texte-coran" lang="ar" dir="rtl">' + ar + '</p>' +
@@ -548,6 +559,8 @@
     $('#btn-repet').textContent = '×' + S.repetitions;
     $('#btn-repet').setAttribute('aria-label', 'Chaque verset joué ' + S.repetitions + ' fois');
     $('#btn-trad').setAttribute('aria-pressed', S.traduction ? 'true' : 'false');
+    $('#btn-tajwid').setAttribute('aria-pressed', S.tajwid ? 'true' : 'false');
+    $('#legende-tajwid').hidden = !S.tajwid || !segs.length;
 
     var fait = $('#fait-du-jour');
     if (t.detail) {
@@ -805,6 +818,8 @@
       RECITATEURS.forEach(function (r) { var o = document.createElement('option'); o.value = r[0]; o.textContent = r[1]; sel.appendChild(o); });
     }
     sel.value = S.recitateur;
+    $('#reglage-tajwid').setAttribute('aria-pressed', S.tajwid ? 'true' : 'false');
+    $('#reglage-tajwid-txt').textContent = S.tajwid ? 'Activées' : 'Désactivées';
   }
 
   // ---------- Thème ----------
@@ -871,6 +886,14 @@
     toutAfficher();
     toast('Chaque verset sera joué ' + S.repetitions + ' fois.');
   });
+  function basculerTajwid() {
+    S.tajwid = !S.tajwid;
+    sauver();
+    toutAfficher();
+    toast(S.tajwid ? 'Couleurs du tajwid activées.' : 'Couleurs du tajwid désactivées.');
+  }
+  $('#btn-tajwid').addEventListener('click', basculerTajwid);
+  $('#reglage-tajwid').addEventListener('click', basculerTajwid);
   $('#btn-trad').addEventListener('click', function () {
     S.traduction = !S.traduction;
     sauver();
