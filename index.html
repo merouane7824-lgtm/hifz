@@ -1,0 +1,271 @@
+<!doctype html>
+<html lang="fr" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Hifz — mémorisation du Coran</title>
+<meta name="description" content="Suivi quotidien de mémorisation du Coran : versets du jour, révisions, progression par juz et par sourate.">
+<meta name="theme-color" content="#F1F4F8" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0C1424" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Hifz">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="icon" type="image/png" href="icons/icon-192.png">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Amiri+Quran&family=Figtree:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="styles.css">
+<script>
+  // Applique le thème avant l'affichage pour éviter un flash.
+  (function () {
+    var t = 'auto';
+    try { t = (JSON.parse(localStorage.getItem('hifz.v1') || '{}').theme) || 'auto'; } catch (e) {}
+    var sombre = t === 'dark' || (t === 'auto' && window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches);
+    document.documentElement.setAttribute('data-theme', sombre ? 'dark' : 'light');
+  })();
+</script>
+</head>
+<body>
+<div class="app">
+  <header class="entete">
+    <div class="entete-titre">
+      <span class="marque" aria-hidden="true"><svg viewBox="0 0 24 24"><use href="#etoile"/></svg></span>
+      <div>
+        <p class="entete-app">Hifz</p>
+        <p class="entete-date" id="date-du-jour"></p>
+      </div>
+    </div>
+    <button class="icone-btn" id="bascule-theme" type="button" aria-label="Changer de thème">
+      <svg class="ico-soleil" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.2M12 19.3v2.2M4.6 4.6l1.6 1.6M17.8 17.8l1.6 1.6M2.5 12h2.2M19.3 12h2.2M4.6 19.4l1.6-1.6M17.8 6.2l1.6-1.6"/></svg>
+      <svg class="ico-lune" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.6A8.5 8.5 0 0 1 9.4 4a8.5 8.5 0 1 0 10.6 10.6z"/></svg>
+    </button>
+  </header>
+
+  <main>
+    <!-- AUJOURD'HUI -->
+    <section class="vue" id="vue-jour" data-vue="jour" aria-labelledby="t-jour">
+      <h1 class="vue-titre" id="t-jour">Aujourd’hui</h1>
+
+      <article class="carte-verset" id="carte-verset">
+        <svg class="coin coin-hg" viewBox="0 0 24 24" aria-hidden="true"><use href="#etoile"/></svg>
+        <svg class="coin coin-hd" viewBox="0 0 24 24" aria-hidden="true"><use href="#etoile"/></svg>
+        <svg class="coin coin-bg" viewBox="0 0 24 24" aria-hidden="true"><use href="#etoile"/></svg>
+        <svg class="coin coin-bd" viewBox="0 0 24 24" aria-hidden="true"><use href="#etoile"/></svg>
+        <p class="verset-statut" id="verset-statut"></p>
+        <div id="nouveaux"></div>
+        <div class="verset-outils">
+          <button class="pilule" type="button" id="btn-ecouter" aria-pressed="false">
+            <svg class="ico-play" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l10-6.5z"/></svg>
+            <svg class="ico-pause" viewBox="0 0 24 24" aria-hidden="true"><path d="M7.5 5.5h3v13h-3zM13.5 5.5h3v13h-3z"/></svg>
+            <span id="btn-ecouter-txt">Écouter</span>
+          </button>
+          <button class="pilule pilule-discrete" type="button" id="btn-repet" aria-label="Nombre d’écoutes">×3</button>
+          <button class="pilule pilule-discrete" type="button" id="btn-trad" aria-pressed="true">Traduction</button>
+        </div>
+      </article>
+
+      <div class="barre-action">
+        <div class="pas" role="group" aria-label="Nombre de versets">
+          <button class="pas-btn" type="button" id="pas-moins" aria-label="Un verset de moins">−</button>
+          <output class="pas-val" id="pas-val" aria-live="polite">2</output>
+          <button class="pas-btn" type="button" id="pas-plus" aria-label="Un verset de plus">+</button>
+        </div>
+        <button class="btn-principal" type="button" id="btn-valider">Je les ai appris</button>
+      </div>
+      <p class="fait-du-jour" id="fait-du-jour" hidden></p>
+
+      <article class="bloc" id="bloc-recent">
+        <div class="bloc-tete">
+          <h2 class="bloc-titre">Révision récente</h2>
+          <button class="coche" type="button" id="btn-recent" aria-pressed="false"><span class="coche-case" aria-hidden="true"></span><span id="btn-recent-txt">Faite</span></button>
+        </div>
+        <p class="bloc-aide">Récite d’un trait la sourate en cours, puis enchaîne avec les nouveaux versets.</p>
+        <div id="recent"></div>
+      </article>
+
+      <article class="bloc" id="bloc-ancien">
+        <div class="bloc-tete">
+          <h2 class="bloc-titre">Révision ancienne</h2>
+          <span class="bloc-meta" id="ancien-meta"></span>
+        </div>
+        <p class="bloc-aide">Récite chaque sourate de mémoire, puis note-la. Une sourate fragile revient plus vite.</p>
+        <ul class="liste-rev" id="ancien"></ul>
+      </article>
+    </section>
+
+    <!-- PROGRÈS -->
+    <section class="vue" id="vue-progres" data-vue="progres" aria-labelledby="t-progres" hidden>
+      <h1 class="vue-titre" id="t-progres">Progrès</h1>
+      <article class="bloc bloc-anneau">
+        <div class="anneau" id="anneau"></div>
+        <dl class="chiffres" id="chiffres"></dl>
+      </article>
+
+      <article class="bloc bloc-duree" id="bloc-duree">
+        <h2 class="bloc-titre">Temps restant pour tout le Coran</h2>
+        <div class="duree-rythme">
+          <span>Versets par jour</span>
+          <div class="pas petit" role="group" aria-label="Objectif quotidien">
+            <button class="pas-btn" type="button" id="duree-moins" aria-label="Un verset de moins par jour">−</button>
+            <output class="pas-val" id="duree-obj">2</output>
+            <button class="pas-btn" type="button" id="duree-plus" aria-label="Un verset de plus par jour">+</button>
+          </div>
+        </div>
+        <p class="duree-val" id="duree-val" aria-live="polite"></p>
+        <p class="bloc-aide" id="duree-sous"></p>
+      </article>
+
+      <article class="bloc">
+        <div class="bloc-tete"><h2 class="bloc-titre">Les 30 juz</h2><span class="bloc-meta" id="juz-meta"></span></div>
+        <div class="grille-juz" id="grille-juz"></div>
+      </article>
+
+      <article class="bloc">
+        <div class="bloc-tete"><h2 class="bloc-titre">Nouveaux versets, 4 dernières semaines</h2></div>
+        <div class="graphe" id="graphe"></div>
+        <p class="bloc-aide" id="graphe-legende"></p>
+      </article>
+
+      <article class="bloc">
+        <div class="bloc-tete"><h2 class="bloc-titre">À ce rythme</h2></div>
+        <table class="tableau" id="projections"></table>
+        <p class="bloc-aide">Estimation en nombre de versets. Les versets s’allongent dans les grandes sourates : à rythme égal, les séances deviendront plus longues.</p>
+      </article>
+    </section>
+
+    <!-- SOURATES -->
+    <section class="vue" id="vue-sourates" data-vue="sourates" aria-labelledby="t-sourates" hidden>
+      <h1 class="vue-titre" id="t-sourates">Sourates</h1>
+      <label class="recherche">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg>
+        <input type="search" id="recherche" placeholder="Nom ou numéro de sourate" autocomplete="off" aria-label="Rechercher une sourate">
+      </label>
+      <p class="bloc-aide marge">Classées par juz, dans ton ordre d’apprentissage. Touche une sourate pour la modifier.</p>
+      <div id="liste-juz"></div>
+    </section>
+
+    <!-- RÉGLAGES -->
+    <section class="vue" id="vue-reglages" data-vue="reglages" aria-labelledby="t-reglages" hidden>
+      <h1 class="vue-titre" id="t-reglages">Réglages</h1>
+
+      <article class="bloc" id="bloc-installer">
+        <h2 class="bloc-titre">Installer Hifz sur l’écran d’accueil</h2>
+        <p class="bloc-aide">Dans Safari, touche Partager puis « Sur l’écran d’accueil ». Ensuite, ouvre toujours Hifz depuis cette icône : Safari et l’icône gardent chacun leurs propres données. Si tu as déjà commencé dans Safari, exporte ta sauvegarde et importe-la dans l’appli installée.</p>
+      </article>
+
+      <article class="bloc">
+        <h2 class="bloc-titre">Apparence</h2>
+        <div class="segmente" role="radiogroup" aria-label="Thème" id="choix-theme">
+          <button type="button" role="radio" data-theme-choix="auto">Automatique</button>
+          <button type="button" role="radio" data-theme-choix="light">Clair</button>
+          <button type="button" role="radio" data-theme-choix="dark">Sombre</button>
+        </div>
+      </article>
+
+      <article class="bloc">
+        <h2 class="bloc-titre">Objectif et révision</h2>
+        <div class="ligne-reglage">
+          <div><p class="reglage-nom">Nouveaux versets par jour</p><p class="bloc-aide" id="obj-duree"></p></div>
+          <div class="pas petit" role="group" aria-label="Objectif quotidien">
+            <button class="pas-btn" type="button" id="obj-moins" aria-label="Diminuer l’objectif">−</button>
+            <output class="pas-val" id="obj-val">2</output>
+            <button class="pas-btn" type="button" id="obj-plus" aria-label="Augmenter l’objectif">+</button>
+          </div>
+        </div>
+        <div class="ligne-reglage">
+          <div><p class="reglage-nom">Tour de la révision ancienne</p><p class="bloc-aide">Chaque sourate apprise revient au moins une fois sur cette durée.</p></div>
+          <div class="pas petit" role="group" aria-label="Durée du tour de révision">
+            <button class="pas-btn" type="button" id="cycle-moins" aria-label="Raccourcir le tour">−</button>
+            <output class="pas-val" id="cycle-val">7 j</output>
+            <button class="pas-btn" type="button" id="cycle-plus" aria-label="Allonger le tour">+</button>
+          </div>
+        </div>
+        <label class="ligne-reglage">
+          <div><p class="reglage-nom">Récitateur</p><p class="bloc-aide">Pour le bouton Écouter.</p></div>
+          <select id="recitateur" class="choix"></select>
+        </label>
+      </article>
+
+      <article class="bloc" id="bloc-widget">
+        <h2 class="bloc-titre">Widget sur l’écran d’accueil</h2>
+        <p class="bloc-aide">Affiche les versets du jour, en arabe, directement sur ton iPhone. Il passe par l’app gratuite Scriptable (iOS 15.5 ou plus récent).</p>
+        <ol class="etapes">
+          <li>Installe <a href="https://apps.apple.com/fr/app/scriptable/id1405459188" target="_blank" rel="noopener">Scriptable</a> depuis l’App Store.</li>
+          <li><button class="lien-btn" type="button" id="btn-copier-widget">Copie le script du widget</button>, puis dans Scriptable touche +, colle-le et nomme le script <b>Hifz</b>.</li>
+          <li>Reviens ici et touche « Envoyer au widget » : Scriptable s’ouvre et enregistre tes versets du jour.</li>
+          <li>Sur l’écran d’accueil, appui long → + → Scriptable → taille moyenne. Touche le widget en mode édition et choisis le script Hifz.</li>
+        </ol>
+        <button class="btn-secondaire" type="button" id="btn-envoyer-widget">Envoyer au widget</button>
+        <p class="bloc-aide">Après chaque validation, l’appli te proposera de mettre le widget à jour.</p>
+      </article>
+
+      <article class="bloc">
+        <h2 class="bloc-titre">Sauvegarde</h2>
+        <p class="bloc-aide">Ta progression est enregistrée sur ce téléphone. Exporte-la de temps en temps pour ne rien perdre, et importe-la si tu changes d’appareil.</p>
+        <div class="rangee">
+          <button class="btn-secondaire" type="button" id="btn-exporter">Exporter</button>
+          <label class="btn-secondaire" for="fichier-import">Importer</label>
+          <input type="file" id="fichier-import" accept="application/json,.json" hidden>
+        </div>
+      </article>
+
+      <details class="bloc details">
+        <summary class="bloc-titre">La méthode, en bref</summary>
+        <div class="texte">
+          <p><b>Nouveau.</b> Écoute les versets plusieurs fois, lis-les dans ton mushaf en comprenant le sens, répète chaque verset en regardant puis sans regarder, jusqu’à le réciter plusieurs fois de suite sans faute. Enchaîne ensuite les versets entre eux.</p>
+          <p><b>Révision récente.</b> Récite la sourate en cours depuis son début (au plus ses 20 derniers versets) et raccroche-y les nouveaux.</p>
+          <p><b>Révision ancienne.</b> La liste du jour fait tourner tout ce que tu as appris. Note « Fragile » ce qui accroche : la sourate reviendra plus tôt.</p>
+          <p><b>Ce qui fait la différence.</b> Toujours le même mushaf, un moment fixe (idéalement après Fajr), les versets du jour récités dans tes prières, et une écoute régulière par quelqu’un qui maîtrise le tajwid. Si les anciennes sourates deviennent fragiles, ralentis le nouveau.</p>
+        </div>
+      </details>
+
+      <article class="bloc">
+        <h2 class="bloc-titre">Repartir de zéro</h2>
+        <p class="bloc-aide">Efface tout le suivi de ce téléphone et revient au point de départ (An-Nas → Al-Mutaffifin v. 17).</p>
+        <button class="btn-danger" type="button" id="btn-reset">Réinitialiser</button>
+      </article>
+      <p class="pied">Texte arabe, traduction Hamidullah et récitations : api.alquran.cloud. Découpage des juz : mushaf de Médine.</p>
+    </section>
+  </main>
+
+  <nav class="onglets" aria-label="Navigation">
+    <button type="button" class="onglet" data-onglet="jour" aria-current="page">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 6.5c2.6-1.4 5-1.4 7.5.2 2.5-1.6 4.9-1.6 7.5-.2v12c-2.6-1.4-5-1.4-7.5.2-2.5-1.6-4.9-1.6-7.5-.2z"/><path d="M12 6.7v12"/></svg>
+      <span>Aujourd’hui</span>
+    </button>
+    <button type="button" class="onglet" data-onglet="progres">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 19.5V13M10 19.5V8.5M15 19.5V11M20 19.5V5"/></svg>
+      <span>Progrès</span>
+    </button>
+    <button type="button" class="onglet" data-onglet="sourates">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 6h14M5 12h14M5 18h9"/></svg>
+      <span>Sourates</span>
+    </button>
+    <button type="button" class="onglet" data-onglet="reglages">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 3.5v2.3M12 18.2v2.3M3.5 12h2.3M18.2 12h2.3M6 6l1.6 1.6M16.4 16.4L18 18M6 18l1.6-1.6M16.4 7.6L18 6"/></svg>
+      <span>Réglages</span>
+    </button>
+  </nav>
+</div>
+
+<div class="feuille-fond" id="feuille-fond" hidden></div>
+<div class="feuille" id="feuille" role="dialog" aria-modal="true" aria-labelledby="feuille-titre" hidden>
+  <div class="feuille-poignee" aria-hidden="true"></div>
+  <div id="feuille-contenu"></div>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite" hidden><span id="toast-txt"></span><span class="toast-actions" id="toast-actions"></span></div>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="etoile" viewBox="0 0 24 24">
+    <path d="M12 2.5L21.5 12 12 21.5 2.5 12z M5.3 5.3H18.7V18.7H5.3z"/>
+    <circle cx="12" cy="12" r="2.6" class="etoile-coeur"/>
+  </symbol>
+</svg>
+
+<script src="data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
